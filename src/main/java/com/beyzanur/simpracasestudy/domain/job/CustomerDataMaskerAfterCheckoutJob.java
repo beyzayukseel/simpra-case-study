@@ -15,7 +15,7 @@ public class CustomerDataMaskerAfterCheckoutJob {
     private final ReservationService reservationService;
 
     // run every hour and check if there is any checkout in the last hour
-    @Scheduled(cron = "0 0 1 * * *")
+    @Scheduled(cron = "0 0 0 * * *")
     public void maskCustomerDataAfterCheckout() {
         List<Reservation> reservations = reservationService.getCheckedOutReservations();
         reservations.forEach(this::maskCustomer);
