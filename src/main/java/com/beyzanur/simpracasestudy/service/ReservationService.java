@@ -2,6 +2,11 @@ package com.beyzanur.simpracasestudy.service;
 
 import com.beyzanur.simpracasestudy.domain.exception.ExceptionDescription;
 import com.beyzanur.simpracasestudy.domain.exception.ExceptionHandler;
+import com.beyzanur.simpracasestudy.domain.mapper.ReservationEntityMapper;
+import com.beyzanur.simpracasestudy.domain.mapper.ReservationResponseMapper;
+import com.beyzanur.simpracasestudy.domain.mapper.UpdateReservationMapper;
+import com.beyzanur.simpracasestudy.domain.validator.CreateReservationValidator;
+import com.beyzanur.simpracasestudy.domain.validator.UpdateReservationValidator;
 import com.beyzanur.simpracasestudy.entity.RateCode;
 import com.beyzanur.simpracasestudy.entity.Reservation;
 import com.beyzanur.simpracasestudy.entity.RoomCode;
@@ -15,7 +20,6 @@ import com.google.common.util.concurrent.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -31,16 +35,11 @@ public class ReservationService{
     private final NotificationSender notificationSender;
 
     public String createReservation(CreateReservationRequest createReservationRequest) {
-        createReservationRequest.validate();
+        CreateReservationValidator.validate(createReservationRequest);
         Optional<RateCode> rateCode = rateCodeRepository.findByCode(createReservationRequest.rateCode());
-        if(rateCode.isEmpty()) {
-            throw new ExceptionHandler(ExceptionDescription.RATE_CODE_CANNOT_BE_FOUND, HttpStatus.NOT_FOUND);
-        }
         Optional<RoomCode> roomCode = roomCodeRepository.findByCode(createReservationRequest.roomCode());
-        if(roomCode.isEmpty()) {
-            throw new ExceptionHandler(ExceptionDescription.ROOM_CODE_CANNOT_BE_FOUND, HttpStatus.NOT_FOUND);
-        }
-        Reservation reservationEntity = createReservationRequest.convertToEntity();
+        checkRoomAndRateCodeEntitiesAreEmpty(rateCode, roomCode);
+        Reservation reservationEntity = ReservationEntityMapper.mapToEntity(createReservationRequest);
         reservationEntity.setRateCode(rateCode.get());
         reservationEntity.setRoomCode(roomCode.get());
         reservationRepository.save(reservationEntity); // try catch
@@ -58,13 +57,22 @@ public class ReservationService{
         return "";
     }
 
+    private void checkRoomAndRateCodeEntitiesAreEmpty(Optional<RateCode> rateCode, Optional<RoomCode> roomCode) {
+        if (rateCode.isEmpty()) {
+            throw new ExceptionHandler(ExceptionDescription.RATE_CODE_CANNOT_BE_FOUND, HttpStatus.NOT_FOUND);
+        }
+        if (roomCode.isEmpty()) {
+            throw new ExceptionHandler(ExceptionDescription.ROOM_CODE_CANNOT_BE_FOUND, HttpStatus.NOT_FOUND);
+        }
+    }
+
     public void sendAsyncNotification(NotificationModel notificationModel) {
         ListenableFuture<String> future = sendNotification(notificationModel);
         Futures.addCallback(future, new FutureCallback<>() {
-            public void onSuccess(String result)
-            {
+            public void onSuccess(String result) {
                 // to do
             }
+
             public void onFailure(Throwable t) {
                 loggerUtil.logError("Error occurred while sending notification", new RuntimeException(""),
                         "Confirmation number:" + notificationModel.confirmationNumber());
@@ -96,27 +104,19 @@ public class ReservationService{
 
 
     public void updateReservation(UpdateReservationRequest updateReservationRequest) {
-        updateReservationRequest.validate();
-
+        UpdateReservationValidator.validate(updateReservationRequest);
         Optional<Reservation> reservationEntity = reservationRepository.findById(updateReservationRequest.reservationId());
-        if(reservationEntity.isEmpty()) {
+        if (reservationEntity.isEmpty()) {
             throw new ExceptionHandler(ExceptionDescription.ENTITY_NOT_FOUND, HttpStatus.NOT_FOUND);
         }
 
         Optional<RateCode> rateCode = rateCodeRepository.findByCode(updateReservationRequest.rateCode());
 
-        if(rateCode.isEmpty()) {
-            loggerUtil.logWarn("Rate code could not be found");
-            throw new ExceptionHandler(ExceptionDescription.RATE_CODE_CANNOT_BE_FOUND, HttpStatus.NOT_FOUND);
-        }
-
         Optional<RoomCode> roomCode = roomCodeRepository.findByCode(updateReservationRequest.roomCode());
-        if(roomCode.isEmpty()) {
-            loggerUtil.logWarn("Room code could not be found");
-            throw new ExceptionHandler(ExceptionDescription.ROOM_CODE_CANNOT_BE_FOUND, HttpStatus.NOT_FOUND);
-        }
 
-        updateReservationRequest.convertToEntity(reservationEntity.get());
+        checkRoomAndRateCodeEntitiesAreEmpty(rateCode, roomCode);
+
+        UpdateReservationMapper.mapToEntity(reservationEntity.get());
 
         reservationEntity.get().setRateCode(rateCode.get());
         reservationEntity.get().setRoomCode(roomCode.get());
@@ -124,8 +124,8 @@ public class ReservationService{
         reservationRepository.save(reservationEntity.get());
     }
 
-    public List<Reservation> getInLastHourCheckoutReservations() {
-        return reservationRepository.findCheckoutInLastHour(LocalDateTime.now(), LocalDateTime.now().plusHours(1));
+    public List<Reservation> getCheckedOutReservations() {
+        return reservationRepository.getCheckedOutReservations(LocalDateTime.now(), LocalDateTime.now().plusHours(1));
     }
 
     public void saveReservation(Reservation reservation) {
@@ -137,16 +137,10 @@ public class ReservationService{
 
         Optional<RateCode> rateCode = rateCodeRepository.findByCode(reservationFilterRequest.rateCode());
 
-        if(rateCode.isEmpty()) {
-            loggerUtil.logWarn("Rate code could not be found");
-            throw new ExceptionHandler(ExceptionDescription.RATE_CODE_CANNOT_BE_FOUND, HttpStatus.NOT_FOUND);
-        }
-
         Optional<RoomCode> roomCode = roomCodeRepository.findByCode(reservationFilterRequest.roomCode());
-        if(roomCode.isEmpty()) {
-            loggerUtil.logWarn("Room code could not be found");
-            throw new ExceptionHandler(ExceptionDescription.ROOM_CODE_CANNOT_BE_FOUND, HttpStatus.NOT_FOUND);
-        }
+
+        checkRoomAndRateCodeEntitiesAreEmpty(rateCode, roomCode);
+
 
         List<Reservation> getFilteredReservations = reservationRepository.findByCriteria(
                 reservationFilterRequest.checkInDate(),
@@ -155,6 +149,6 @@ public class ReservationService{
                 roomCode.get().getId()
         );
 
-        return getFilteredReservations.parallelStream().map(Reservation::convertToReservationResponse).toList();
+        return getFilteredReservations.parallelStream().map(ReservationResponseMapper::mapToDto).toList();
     }
 }

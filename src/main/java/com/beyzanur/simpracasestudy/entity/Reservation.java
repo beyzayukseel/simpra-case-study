@@ -28,20 +28,4 @@ public class Reservation {
     private String created;
     private String updated;
     private int totalPax;
-
-    public ReservationResponse convertToReservationResponse() {
-        return new ReservationResponse(
-                this.getCustomer().getFirstName(),
-                this.getCustomer().getLastName(),
-                this.getCustomer().getEmail(),
-                this.getCustomer().getPhone(),
-                this.getId().toString(),
-                this.getStatus(),
-                this.getCheckinDate().toString(),
-                this.getCheckoutDate().toString(),
-                this.getRoomCode().getCode(),
-                this.getRateCode().getCode(),
-                this.getTotalPax()
-        );
-    }
 }

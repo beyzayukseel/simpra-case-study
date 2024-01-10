@@ -8,5 +8,4 @@ public record NotificationModel (
         String firstName,
         String lastName
 ) {
-
 }

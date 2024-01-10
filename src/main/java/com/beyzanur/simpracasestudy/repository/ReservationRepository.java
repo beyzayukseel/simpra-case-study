@@ -14,5 +14,5 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findByCriteria(String checkinDate, String checkoutDate, Long rateCodeId, Long roomCodeId);
 
     @Query("SELECT r FROM Reservation r WHERE r.checkoutDate < ?1 AND r.checkoutDate > ?2")
-    List<Reservation> findCheckoutInLastHour(LocalDateTime date1, LocalDateTime date2);
+    List<Reservation> getCheckedOutReservations(LocalDateTime date1, LocalDateTime date2);
 }
