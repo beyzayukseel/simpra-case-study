@@ -1,5 +1,7 @@
 # SIMPRA CASE STUDY
 
+For frontend part of this case study, please visit [frontend-case-study](https://github.com/beyzayukseel/simpra-case-study-fe)
+
 ## Used Technologies & Architecture & Methods:
 
 * Monolithic Architecture
@@ -55,6 +57,24 @@ For JSON format:
 ![db-modelling](img/swagger.png)
 
 
+## AUTHORIZATION
+
+Used JWT for authorization. 
+When user login, system creates a token for user and returns it.
+Token expires in 30 mins.
+
+Login Request CURL:
+
+```
+curl --location 'http://localhost:8086/api/v1/authenticate/login' \
+--header 'Content-Type: application/json' \
+--data '{
+    "username": "beyzabeyza",
+    "password": "beyzabeyza"
+}'
+```
+
+
 ## Docker
 
 Docker Compose file contains 2 services. One for Postgres and the other one for Spring Boot Application.
@@ -75,7 +95,7 @@ It needed to call database or another service, using Python Request library or d
 #### Lambda Function Type: Api
 #### Trigger: API Gateway
 
-curl of request:
+Lambda Request CURL:
 
 ```
 curl --location --request POST 'https://t9qt32gkaf.execute-api.eu-west-1.amazonaws.com/prod/Reservation-Booker' \
