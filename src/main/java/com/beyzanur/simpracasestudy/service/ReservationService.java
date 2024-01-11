@@ -17,11 +17,10 @@ import com.beyzanur.simpracasestudy.repository.RoomCodeRepository;
 import com.beyzanur.simpracasestudy.service.notification.NotificationSender;
 import com.beyzanur.simpracasestudy.util.LoggerUtil;
 import com.beyzanur.simpracasestudy.util.RequestSender;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +38,7 @@ public class ReservationService{
     private final NotificationSender notificationSender;
     private final RequestSender requestSender;
 
+    @Transactional
     public String createReservation(CreateReservationRequest createReservationRequest) {
         CreateReservationValidator.validate(createReservationRequest);
         Optional<RateCode> rateCode = rateCodeRepository.findByCode(createReservationRequest.rateCode());
@@ -156,10 +156,9 @@ public class ReservationService{
 
         checkRoomAndRateCodeEntitiesAreEmpty(rateCode, roomCode);
 
-
         List<Reservation> getFilteredReservations = reservationRepository.findByCriteria(
-                reservationFilterRequest.checkInDate(),
-                reservationFilterRequest.checkoutDate(),
+                LocalDateTime.parse(reservationFilterRequest.checkInDate()),
+                LocalDateTime.parse(reservationFilterRequest.checkoutDate()),
                 rateCode.get().getId(),
                 roomCode.get().getId()
         );
