@@ -58,8 +58,11 @@ public class ReservationService{
         );
 
         loggerUtil.logInformation("Reservation created successfully");
+
         triggerReservationBooker(reservationEntity);
+
         sendAsyncNotification(notificationModel);
+
         return "";
     }
 
