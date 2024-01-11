@@ -102,7 +102,8 @@ It used Java Mail Sender for sending email.
 
 Indexes can be considered for the fields to filter in the search endpoint. 
 In this context, creating a composite index for checkin date and checkout date might be reasonable. 
-Currently, they are stored as LocalDateTime, but converting them to UNIX format could enable better indexing practices.
+Currently, they are stored as LocalDateTime, but converting them to UNIX format could enable better indexing practices 
+for my implementation.
 
 
 
