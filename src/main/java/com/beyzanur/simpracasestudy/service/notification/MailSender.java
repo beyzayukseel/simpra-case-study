@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class MailSender implements NotificationSender {
 
-    @Value("${confirmation.mail.address}")
+    @Value("${spring.mail.host}")
     private String mailFrom;
 
     private final JavaMailSender javaMailSender;
@@ -23,6 +23,7 @@ public class MailSender implements NotificationSender {
         mailMessage.setTo(message.email());
         mailMessage.setSubject("Reservation Confirmation:" + message.confirmationNumber());
         mailMessage.setText(message.message());
-        javaMailSender.send(mailMessage);
+        // please allow port 25 by configuring your firewall settings for sending email
+        //javaMailSender.send(mailMessage);
     }
 }
