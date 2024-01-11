@@ -29,8 +29,8 @@ public class UpdateReservationValidator {
         if (request.checkOutDate() == null || request.checkOutDate().isBlank()) {
             throw new ExceptionHandler(ExceptionDescription.CHECK_OUT_DATE_CANNOT_BE_EMPTY, HttpStatus.BAD_REQUEST);
         }
-        if (request.checkOutDate().compareTo(request.checkInDate()) > 0) {
-            throw new ExceptionHandler(ExceptionDescription.CHECK_OUT_DATE_CANNOT_BE_EMPTY, HttpStatus.BAD_REQUEST);
+        if (request.checkOutDate().compareTo(request.checkInDate()) < 0) {
+            throw new ExceptionHandler(ExceptionDescription.CHECK_IN_DATE_CANNOT_BE_AFTER_CHECK_OUT_DATE, HttpStatus.BAD_REQUEST);
         }
         if (request.roomCode() == null || request.roomCode().isBlank()) {
             throw new ExceptionHandler(ExceptionDescription.ROOM_CODE_CANNOT_BE_NULL, HttpStatus.BAD_REQUEST);
