@@ -5,6 +5,8 @@ import com.beyzanur.simpracasestudy.entity.Reservation;
 import com.beyzanur.simpracasestudy.model.CreateReservationRequest;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ReservationEntityMapper {
     public static Reservation mapToEntity(CreateReservationRequest createReservationRequest) {
@@ -21,6 +23,11 @@ public class ReservationEntityMapper {
         customerEntity.setPhone(createReservationRequest.phoneNumber());
         customerEntity.setCreated(LocalDateTime.now().toString());
         customerEntity.setUpdated(LocalDateTime.now().toString());
+
+        List reservationList = new ArrayList();
+        reservationList.add(reservationEntity);
+
+        customerEntity.setReservation(reservationList);
 
         reservationEntity.setCustomer(customerEntity);
 
