@@ -16,14 +16,14 @@ import com.beyzanur.simpracasestudy.repository.ReservationRepository;
 import com.beyzanur.simpracasestudy.repository.RoomCodeRepository;
 import com.beyzanur.simpracasestudy.service.notification.NotificationSender;
 import com.beyzanur.simpracasestudy.util.LoggerUtil;
-import com.google.common.util.concurrent.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executors;
 
 @Service
 @RequiredArgsConstructor
@@ -66,35 +66,21 @@ public class ReservationService{
         }
     }
 
-    public void sendAsyncNotification(NotificationModel notificationModel) {
-        ListenableFuture<String> future = sendNotification(notificationModel);
-        Futures.addCallback(future, new FutureCallback<>() {
-            public void onSuccess(String result) {
-                // to do
-            }
-
-            public void onFailure(Throwable t) {
-                loggerUtil.logError("Error occurred while sending notification", new RuntimeException(""),
-                        "Confirmation number:" + notificationModel.confirmationNumber());
-            }
-        }, MoreExecutors.directExecutor());
-    }
-
-    private ListenableFuture<String> sendNotification(NotificationModel notificationModel) {
-        ListeningExecutorService service = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10));
-        return service.submit(() -> {
-            try {
-                notificationSender.sendNotification(notificationModel);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+    @Async
+    public String sendAsyncNotification(NotificationModel notificationModel) {
+        try {
+            notificationSender.sendNotification(notificationModel);
             return "Task completed successfully!";
-        });
+        } catch (Exception e) {
+            loggerUtil.logError("Error occurred while sending notification", e, "");
+            e.printStackTrace();
+        }
+        return "Task failed!";
     }
 
     public void deleteReservation(Long reservationId) {
         Optional<Reservation> reservation = reservationRepository.findById(reservationId);
-        if(reservation.isEmpty()) {
+        if (reservation.isEmpty()) {
             loggerUtil.logWarn("Reservation could not be found");
             throw new ExceptionHandler(ExceptionDescription.ENTITY_NOT_FOUND, HttpStatus.NOT_FOUND);
         }
