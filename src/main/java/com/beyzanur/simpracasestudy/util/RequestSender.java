@@ -18,19 +18,16 @@ public class RequestSender {
     private final RestClient restClient;
 
     public RequestSender() {
-        restClient = RestClient.builder()
-                .baseUrl(LAMBDA_URL)
-                .build();
+        restClient = RestClient.builder().build();
     }
 
-    public SaveReservationModel book(SaveReservationModel post) {
+    public String book(SaveReservationModel post) {
         return restClient.post()
-                .uri("/Reservation-Booker")
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("authorization", LAMBDA_API_KEY)
+                .uri(LAMBDA_URL + "/Reservation-Booker")
+                .header("Authorization", LAMBDA_API_KEY)
                 .body(post)
                 .retrieve()
-                .body(SaveReservationModel.class);
+                .body(String.class);
     }
 
 }
