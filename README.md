@@ -57,7 +57,7 @@ For JSON format:
 ![db-modelling](img/swagger.png)
 
 
-## AUTHORIZATION
+## AUTHENTICATION
 
 Used JWT for authorization. 
 When user login, system creates a token for user and returns it.
