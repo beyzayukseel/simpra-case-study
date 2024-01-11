@@ -63,7 +63,7 @@ public class ReservationService{
 
         sendAsyncNotification(notificationModel);
 
-        return "";
+        return "Reservation created successfully";
     }
 
     private void triggerReservationBooker(Reservation reservationEntity) {
@@ -99,12 +99,12 @@ public class ReservationService{
     public String sendAsyncNotification(NotificationModel notificationModel) {
         try {
             notificationSender.sendNotification(notificationModel);
-            return "Task completed successfully!";
+            return "Notification send successfully!";
         } catch (Exception e) {
             loggerUtil.logError("Error occurred while sending notification", e, "");
             e.printStackTrace();
         }
-        return "Task failed!";
+        return "Notification couldn't send/failed!";
     }
 
     public void deleteReservation(Long reservationId) {
