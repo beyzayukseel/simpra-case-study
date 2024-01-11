@@ -16,8 +16,12 @@ import com.beyzanur.simpracasestudy.repository.ReservationRepository;
 import com.beyzanur.simpracasestudy.repository.RoomCodeRepository;
 import com.beyzanur.simpracasestudy.service.notification.NotificationSender;
 import com.beyzanur.simpracasestudy.util.LoggerUtil;
+import com.beyzanur.simpracasestudy.util.RequestSender;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +37,7 @@ public class ReservationService{
     private final ReservationRepository reservationRepository;
     private final LoggerUtil loggerUtil;
     private final NotificationSender notificationSender;
+    private final RequestSender requestSender;
 
     public String createReservation(CreateReservationRequest createReservationRequest) {
         CreateReservationValidator.validate(createReservationRequest);
@@ -53,8 +58,29 @@ public class ReservationService{
         );
 
         loggerUtil.logInformation("Reservation created successfully");
+        triggerReservationBooker(reservationEntity);
         sendAsyncNotification(notificationModel);
         return "";
+    }
+
+    private void triggerReservationBooker(Reservation reservationEntity) {
+        SaveReservationModel model = new SaveReservationModel(
+                reservationEntity.getId(),
+                reservationEntity.getCustomer().getFirstName(),
+                reservationEntity.getCustomer().getLastName(),
+                reservationEntity.getCustomer().getEmail(),
+                reservationEntity.getStatus(),
+                reservationEntity.getCheckinDate().toString(),
+                reservationEntity.getCheckoutDate().toString(),
+                reservationEntity.getRateCode().getId(),
+                reservationEntity.getRoomCode().getId()
+        );
+
+        val response = requestSender.book(model);
+
+        if (response == null) {
+            loggerUtil.logInformation("Triggered successfully! ");
+        }
     }
 
     private void checkRoomAndRateCodeEntitiesAreEmpty(Optional<RateCode> rateCode, Optional<RoomCode> roomCode) {
