@@ -11,15 +11,15 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class MailSender implements NotificationSender {
 
-    @Value("${spring.mail.host}")
-    private String mailFrom;
+    //@Value("${spring.mail.host}")
+    //private String mailFrom;
 
     private final JavaMailSender javaMailSender;
 
     @Override
     public void sendNotification(NotificationModel message) {
         SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setFrom(mailFrom);
+        mailMessage.setFrom("");
         mailMessage.setTo(message.email());
         mailMessage.setSubject("Reservation Confirmation:" + message.confirmationNumber());
         mailMessage.setText(message.message());
