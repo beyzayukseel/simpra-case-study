@@ -1,4 +1,4 @@
-# SIMPRA CASE STUDY
+# CASE STUDY
 
 For frontend part of this case study, please visit [frontend-case-study](https://github.com/beyzayukseel/simpra-case-study-fe)
 
